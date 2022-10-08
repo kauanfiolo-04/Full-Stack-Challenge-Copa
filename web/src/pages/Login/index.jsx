@@ -1,8 +1,10 @@
 import { useFormik } from 'formik'
 import * as yup from 'yup'
 import axios from 'axios'
+import { useLocalStorage } from 'react-use'
+import { Navigate } from 'react-router-dom'
 
-import { Icon,Input } from "~/components"
+import { Icon, Input } from "~/components"
 
 const validationSchema = yup.object().shape({
     email: yup.string().email('Informe um e-mail válido').required("Informe seu email"),
@@ -10,6 +12,9 @@ const validationSchema = yup.object().shape({
 })
 
 export const Login = () => {
+
+    const [auth,setAuth,]=useLocalStorage('auth',{})
+
     const formik = useFormik({
         onSubmit: async (values) => {
 
@@ -17,12 +22,13 @@ export const Login = () => {
                 method: 'get',
                 baseURL: 'http://localhost:3333',
                 url: '/login',
-                auth:{
+                auth: {
                     username: values.email,
                     password: values.password
                 },
             })
-            console.log(res.data)
+            
+            setAuth(res.data)
         },
         initialValues: {
             email: '',
@@ -30,6 +36,10 @@ export const Login = () => {
         },
         validationSchema
     })
+
+    if(auth?.user?.id){
+        return <Navigate to='/dashboard' replace={true}/>
+    }
 
     return (
         <div>
@@ -57,12 +67,12 @@ export const Login = () => {
                     <Input
                         type="password" name="password" label="Sua senha" placeholder="Digite sua senha"
                         error={formik.touched.password && formik.errors.password} value={formik.values.password}
-                        onChange={formik.handleChange} onBlur={formik.handleBlur} 
+                        onChange={formik.handleChange} onBlur={formik.handleBlur}
                     />
 
-                    <button className="block w-full text-center text-white bg-red-500 px-6 py-3 rounded-xl"
-                    type='submit' disabled={!formik.isValid || formik.isSubmitting} >
-                        Entrar
+                    <button className="block w-full text-center text-white bg-red-500 px-6 py-3 rounded-xl disabled:opacity-50"
+                        type='submit' disabled={!formik.isValid || formik.isSubmitting}  >
+                        {formik.isSubmitting ? 'Carregando...' : 'Entrar'}
                     </button>
                 </form>
             </main>
