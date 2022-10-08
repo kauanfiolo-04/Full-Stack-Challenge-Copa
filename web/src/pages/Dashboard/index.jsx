@@ -2,26 +2,27 @@ import { Icon, Card, DateSelect } from '~/components'
 import { Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useLocalStorage, useAsyncFn } from 'react-use'
-import { format } from 'date-fns'
+import { format, formatISO } from 'date-fns'
 import axios from 'axios'
 
 export const Dashboard = () => {
-    const[currentDate, setDate]=useState('2022-11-25T00:00:00-03:00')
+    const [currentDate, setDate] = useState(formatISO(new Date(2022, 10, 20)))
     const [auth] = useLocalStorage('auth', {})
 
-    const [state, doFetch] = useAsyncFn(async(params) => {
-        const res= await axios({
+    const [state, doFetch] = useAsyncFn(async (params) => {
+        const res = await axios({
             method: 'get',
             baseURL: 'http://localhost:3333',
             url: '/games',
             params
         })
         return res.data
+
     })
 
-    useEffect(()=>{
-        doFetch({gameTime: currentDate})
-    },[currentDate])
+    useEffect(() => {
+        doFetch({ gameTime: currentDate })
+    }, [currentDate])
 
     if (!auth?.user?.id) {
         return <Navigate to="/" replace={true} />
@@ -50,7 +51,7 @@ export const Dashboard = () => {
 
                 <section id="content" className='container max-w-3xl space-y-4 p-4'>
 
-                    <DateSelect currentDate={currentDate} onChange={setDate}/>
+                    <DateSelect currentDate={currentDate} onChange={setDate} />
 
                     <div className='space-y-4'>
                         {state.loading && 'Carregando jogos...'}
@@ -58,9 +59,10 @@ export const Dashboard = () => {
 
                         {!state.loading && !state.error && state.value?.map(game => (
                             <Card
-                                timeA={{ slug: game.homeTeam }}
-                                timeB={{ slug: game.awayTeam }}
-                                match={{ time: format(new Date(game.gameTime),'H:mm') }}
+                                gameId={game.id}
+                                homeTeam={game.homeTeam}
+                                awayTeam={game.awayTeam}
+                                gameTime={format(new Date(game.gameTime), 'H:mm')}
                             />
                         ))}
 

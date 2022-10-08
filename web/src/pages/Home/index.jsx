@@ -6,7 +6,7 @@ export function Home() {
   const [auth]=useLocalStorage('auth',{})
 
   if (auth?.user?.id) {
-    return <Navigate to='/dashboard' replace={true} />
+    return <Navigate to='/' replace={true} />
   }
 
   return (
